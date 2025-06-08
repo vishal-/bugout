@@ -1,5 +1,7 @@
+import { Box } from "@mui/material";
+
 const RapidCalculations = () => {
-  return <div>calculations</div>;
+  return <Box>Nice</Box>;
 };
 
 export default RapidCalculations;

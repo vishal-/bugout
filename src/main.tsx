@@ -1,4 +1,4 @@
 import { createRoot } from "react-dom/client";
-import Container from "./Container.tsx";
+import App from "./App.tsx";
 
-createRoot(document.getElementById("root")!).render(<Container />);
+createRoot(document.getElementById("root")!).render(<App />);
