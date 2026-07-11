@@ -20,6 +20,8 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
+let toastIdCounter = 0;
+
 function App() {
   const [config, setConfig] = useState(() => ({
     baseUrl: localStorage.getItem('backend_base_url') || '',
@@ -37,7 +39,7 @@ function App() {
 
   // Toast dispatch helper
   const addToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    const id = Math.random().toString(36).substring(7);
+    const id = 'toast-' + (++toastIdCounter);
     setToasts((prev) => [...prev, { id, message, type }]);
     
     setTimeout(() => {
@@ -49,23 +51,13 @@ function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Redirection guard component
-  function LandingRedirect() {
-    const isConfigured = !!config.baseUrl && !!config.apiKey;
-    if (isConfigured) {
-      return <Navigate to="/collections" replace />;
-    } else {
-      return <Navigate to="/config" replace />;
-    }
-  }
-
   // Get active domain label
   const getEndpointLabel = () => {
     if (!config.baseUrl) return 'Setup Required';
     try {
       const url = new URL(config.baseUrl);
       return url.host;
-    } catch (e) {
+    } catch {
       return 'Custom Endpoint';
     }
   };
@@ -208,7 +200,16 @@ function App() {
       {/* Main Multi-Page router container */}
       <main style={{ flexGrow: 1, paddingBottom: '40px' }}>
         <Routes>
-          <Route path="/" element={<LandingRedirect />} />
+          <Route 
+            path="/" 
+            element={
+              config.baseUrl && config.apiKey ? (
+                <Navigate to="/collections" replace />
+              ) : (
+                <Navigate to="/config" replace />
+              )
+            } 
+          />
           <Route 
             path="/config" 
             element={
