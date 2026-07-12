@@ -51,22 +51,6 @@ This application serves as an interactive playground and admin console to test l
 ## Get Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+)
+- [Node.js](https://nodejs.org/) (v22+)
 - An active backend server implementing the upload endpoints (or configure the console to point to your live upload service).
 
-### Installation
-1. Install client dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   The application will run locally (typically at `http://localhost:5173/`).
-
-3. Configure connections:
-   - Navigate to the `/config` page in the console.
-   - Enter your target endpoint (e.g., `http://localhost:3000`) and authentication key.
-   - Save to begin testing uploads on the `/images` tab.
