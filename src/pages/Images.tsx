@@ -157,7 +157,9 @@ export default function Images({ config, onNotify }: ImagesProps) {
     formData.append('image', selectedFile);
     formData.append('collection', collection);
 
-    const targetUrl = `${config.baseUrl.replace(/\/$/, '')}/api/v1/upload`;
+    const cleanBase = config.baseUrl.trim().replace(/\/$/, '');
+    const isLocalBackend = cleanBase === 'http://localhost:3000';
+    const targetUrl = isLocalBackend ? '/api/v1/upload' : `${cleanBase}/api/v1/upload`;
 
     try {
       const res = await fetch(targetUrl, {
@@ -236,7 +238,9 @@ export default function Images({ config, onNotify }: ImagesProps) {
     if (window.confirm(`Delete image "${img.name}"?`)) {
       if (config.baseUrl && config.apiKey) {
         try {
-          const deleteUrl = `${config.baseUrl.replace(/\/$/, '')}/api/v1/images/${img.id}`;
+          const cleanBase = config.baseUrl.trim().replace(/\/$/, '');
+          const isLocalBackend = cleanBase === 'http://localhost:3000';
+          const deleteUrl = isLocalBackend ? `/api/v1/images/${img.id}` : `${cleanBase}/api/v1/images/${img.id}`;
           const res = await fetch(deleteUrl, {
             method: 'DELETE',
             headers: {
