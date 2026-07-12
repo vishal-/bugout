@@ -220,7 +220,15 @@ function App() {
             } 
           />
           <Route path="/collections" element={<Collections />} />
-          <Route path="/images" element={<Images />} />
+          <Route 
+            path="/images" 
+            element={
+              <Images 
+                config={config} 
+                onNotify={(msg, type) => addToast(msg, type)} 
+              />
+            } 
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
