@@ -9,7 +9,6 @@ import {
   FiGrid,
   FiList,
   FiUploadCloud,
-  FiFile,
   FiCopy,
   FiCheck,
   FiX,
