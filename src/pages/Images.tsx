@@ -52,22 +52,9 @@ export default function Images({ config, onNotify }: ImagesProps) {
   const [lastResponse, setLastResponse] = useState<{ status: number; ok: boolean; data: any } | null>(null);
   const [responseCollapsed, setResponseCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showMocks, setShowMocks] = useState(true);
 
-  // Live uploaded images list
-  const [uploadedImages, setUploadedImages] = useState<ImageAsset[]>(() => {
-    try {
-      const saved = localStorage.getItem('pixelvault_uploaded_images');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Sync uploaded images to localstorage
-  useEffect(() => {
-    localStorage.setItem('pixelvault_uploaded_images', JSON.stringify(uploadedImages));
-  }, [uploadedImages]);
+  // Live uploaded images list (current session only)
+  const [uploadedImages, setUploadedImages] = useState<ImageAsset[]>([]);
 
   // Clean up preview URL when file changes
   useEffect(() => {
@@ -80,18 +67,8 @@ export default function Images({ config, onNotify }: ImagesProps) {
     }
   }, [selectedFile]);
 
-  // Premium mock images grid
-  const mockImages: ImageAsset[] = [
-    { id: 'mock-1', name: 'app_dashboard_v2.png', url: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80', size: 1258291, mimeType: 'image/png', date: '2 hours ago', collection: 'Product Marketing', width: 1920, height: 1080, isMock: true },
-    { id: 'mock-2', name: 'marketing_banner_spring.jpg', url: 'https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=600&q=80', size: 2516582, mimeType: 'image/jpeg', date: 'Yesterday', collection: 'Website Assets', width: 1200, height: 630, isMock: true },
-    { id: 'mock-3', name: 'avatar_user_jane.webp', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&h=400&q=80', size: 145408, mimeType: 'image/webp', date: '3 days ago', collection: 'User Avatars', width: 400, height: 400, isMock: true },
-    { id: 'mock-4', name: 'team_photo_retreat.jpg', url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80', size: 5033164, mimeType: 'image/jpeg', date: '1 week ago', collection: 'Social Media Posts', width: 2400, height: 1600, isMock: true },
-    { id: 'mock-5', name: 'product_showcase_final.png', url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80', size: 3250585, mimeType: 'image/png', date: '2 weeks ago', collection: 'App Mockups', width: 1440, height: 900, isMock: true },
-    { id: 'mock-6', name: 'blog_cover_coding.jpg', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80', size: 839680, mimeType: 'image/jpeg', date: '2 weeks ago', collection: 'Social Media Posts', width: 1200, height: 800, isMock: true },
-  ];
-
-  // Combine live and mock images
-  const allImages = [...uploadedImages, ...(showMocks ? mockImages : [])];
+  // Use current session uploads only
+  const allImages = uploadedImages;
 
   const filteredImages = allImages.filter(img =>
     img.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -230,11 +207,6 @@ export default function Images({ config, onNotify }: ImagesProps) {
   };
 
   const handleDeleteImage = async (img: ImageAsset) => {
-    if (img.isMock) {
-      onNotify('Mock images cannot be deleted from the server.', 'info');
-      return;
-    }
-
     if (window.confirm(`Delete image "${img.name}"?`)) {
       if (config.baseUrl && config.apiKey) {
         try {
@@ -656,33 +628,8 @@ export default function Images({ config, onNotify }: ImagesProps) {
       }}>
         {/* Toggle between live uploads and mock data */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={() => setShowMocks(!showMocks)}
-            style={{
-              background: 'transparent',
-              border: `1px solid ${showMocks ? 'var(--primary)' : 'var(--border)'}`,
-              borderRadius: '8px',
-              padding: '6px 12px',
-              fontSize: '12px',
-              color: showMocks ? 'var(--text-light)' : 'var(--text-muted)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: showMocks ? 'var(--primary)' : 'var(--text-muted)'
-            }} />
-            Include Mock Data
-          </button>
-
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            Showing {filteredImages.length} images ({uploadedImages.length} custom uploads)
+            Showing {filteredImages.length} images uploaded in current session
           </span>
         </div>
 
