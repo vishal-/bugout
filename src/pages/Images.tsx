@@ -18,6 +18,8 @@ import {
   FiSliders
 } from 'react-icons/fi';
 
+import type { ImageAsset } from '../types';
+
 interface ImagesProps {
   config: {
     baseUrl: string;
@@ -26,18 +28,6 @@ interface ImagesProps {
   onNotify: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-interface ImageAsset {
-  id: string;
-  name: string;
-  url: string;
-  width?: number;
-  height?: number;
-  mimeType?: string;
-  size: number | string;
-  collection?: string;
-  date?: string;
-  isMock?: boolean;
-}
 
 export default function Images({ config, onNotify }: ImagesProps) {
   const [search, setSearch] = useState('');
@@ -49,7 +39,7 @@ export default function Images({ config, onNotify }: ImagesProps) {
   const [collection, setCollection] = useState('pets');
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [lastResponse, setLastResponse] = useState<{ status: number; ok: boolean; data: any } | null>(null);
+  const [lastResponse, setLastResponse] = useState<{ status: number; ok: boolean; data: unknown } | null>(null);
   const [responseCollapsed, setResponseCollapsed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -60,10 +50,14 @@ export default function Images({ config, onNotify }: ImagesProps) {
   useEffect(() => {
     if (selectedFile) {
       const objectUrl = URL.createObjectURL(selectedFile);
-      setPreviewUrl(objectUrl);
+      Promise.resolve().then(() => {
+        setPreviewUrl(objectUrl);
+      });
       return () => URL.revokeObjectURL(objectUrl);
     } else {
-      setPreviewUrl(null);
+      Promise.resolve().then(() => {
+        setPreviewUrl(null);
+      });
     }
   }, [selectedFile]);
 
@@ -148,7 +142,7 @@ export default function Images({ config, onNotify }: ImagesProps) {
       });
 
       const responseText = await res.text();
-      let responseJson: any = null;
+      let responseJson: unknown = null;
       try {
         responseJson = JSON.parse(responseText);
       } catch {
@@ -162,19 +156,20 @@ export default function Images({ config, onNotify }: ImagesProps) {
       });
       setResponseCollapsed(false);
 
-      if (res.ok && responseJson) {
+      if (res.ok && responseJson && typeof responseJson === 'object') {
+        const resObj = responseJson as Record<string, unknown>;
         onNotify('Image uploaded successfully!', 'success');
 
         // Use the exact response received from the backend dynamically
         const newAsset: ImageAsset = {
-          id: responseJson.id || 'live-' + Date.now(),
-          name: responseJson.name || selectedFile.name,
-          url: responseJson.url || previewUrl || '',
-          width: responseJson.width,
-          height: responseJson.height,
-          mimeType: responseJson.mimeType || selectedFile.type,
-          size: responseJson.size !== undefined ? responseJson.size : selectedFile.size,
-          collection: responseJson.collection || collection,
+          id: (resObj.id as string) || 'live-' + Date.now(),
+          name: (resObj.name as string) || selectedFile.name,
+          url: (resObj.url as string) || previewUrl || '',
+          width: resObj.width as number | undefined,
+          height: resObj.height as number | undefined,
+          mimeType: (resObj.mimeType as string) || selectedFile.type,
+          size: resObj.size !== undefined ? (resObj.size as number | string) : selectedFile.size,
+          collection: (resObj.collection as string) || collection,
           date: 'Just now',
           isMock: false
         };
@@ -184,13 +179,14 @@ export default function Images({ config, onNotify }: ImagesProps) {
       } else {
         onNotify(`Upload failed: Status ${res.status}`, 'error');
       }
-    } catch (err: any) {
-      console.error(err);
-      onNotify(`Network connection error: ${err.message}`, 'error');
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      onNotify(`Network connection error: ${error.message}`, 'error');
       setLastResponse({
         status: 0,
         ok: false,
-        data: { error: err.message, message: 'Failed to connect to the backend server. Make sure it is running and CORS is enabled.' }
+        data: { error: error.message, message: 'Failed to connect to the backend server. Make sure it is running and CORS is enabled.' }
       });
       setResponseCollapsed(false);
     } finally {

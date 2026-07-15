@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { ImageAsset } from '../types';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   FiFolder,
@@ -25,7 +26,7 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [images, setImages] = useState<any[]>([]);
+  const [images, setImages] = useState<ImageAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [copiedImageId, setCopiedImageId] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   const ITEMS_PER_PAGE = 6;
 
   // Fetch collection details
-  const fetchCollectionImages = async () => {
+  const fetchCollectionImages = useCallback(async () => {
     if (!id) return;
     if (!config.baseUrl || !config.apiKey) {
       onNotify('Backend configuration missing! Please configure Host and API Key in the Config tab.', 'error');
@@ -71,17 +72,26 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
       setImages(data.images || []);
       setCurrentPage(1); // Reset to page 1 on fresh load
       onNotify('Collection details loaded successfully!', 'success');
-    } catch (err: any) {
-      console.error(err);
-      onNotify(err.message || 'Error fetching collection details', 'error');
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      onNotify(error.message || 'Error fetching collection details', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, config.baseUrl, config.apiKey, onNotify]);
 
   useEffect(() => {
-    fetchCollectionImages();
-  }, [id, config.baseUrl, config.apiKey]);
+    let ignore = false;
+    Promise.resolve().then(() => {
+      if (!ignore) {
+        fetchCollectionImages();
+      }
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [fetchCollectionImages]);
 
   // Calculations for page header description
   const totalStorageSize = images.reduce((acc, img) => acc + (Number(img.size) || 0), 0);
@@ -92,7 +102,8 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   const paginatedImages = images.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // Format bytes helper
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes: number | string) => {
+    if (typeof bytes === 'string') return bytes;
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = 2;
@@ -113,7 +124,7 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   };
 
   // Construct Variant API Request URL
-  const constructVariantUrl = (img: any, format: string, size: string) => {
+  const constructVariantUrl = (img: ImageAsset, format: string, size: string) => {
     const slugWithExt = getSlugFromUrl(img.url);
     const cleanUrlBase = config.baseUrl.trim().replace(/\/$/, '');
     const isLocalBackend = cleanUrlBase === 'http://localhost:3000';
@@ -132,7 +143,7 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   };
 
   // Handle viewing specific variant in new tab
-  const handleViewVariant = (img: any) => {
+  const handleViewVariant = (img: ImageAsset) => {
     const format = selectedFormats[img.id] || 'original';
     const size = selectedSizes[img.id] || 'original';
     const url = constructVariantUrl(img, format, size);
@@ -140,7 +151,7 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
   };
 
   // Handle downloading variant blob directly
-  const handleDownloadVariant = async (img: any) => {
+  const handleDownloadVariant = async (img: ImageAsset) => {
     const format = selectedFormats[img.id] || 'original';
     const size = selectedSizes[img.id] || 'original';
     const url = constructVariantUrl(img, format, size);
@@ -171,9 +182,10 @@ export default function CollectionDetail({ config, onNotify }: CollectionDetailP
       document.body.removeChild(a);
       window.URL.revokeObjectURL(blobUrl);
       onNotify('Image variant downloaded successfully!', 'success');
-    } catch (err: any) {
-      console.error(err);
-      onNotify(`Download failed: ${err.message}`, 'error');
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      onNotify(`Download failed: ${error.message}`, 'error');
     } finally {
       setDownloadingIds(prev => ({ ...prev, [img.id]: false }));
     }

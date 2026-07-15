@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { Collection } from '../types';
 import { useNavigate } from 'react-router-dom';
 import {
   FiFolder,
@@ -21,7 +22,7 @@ interface CollectionsProps {
 
 export default function Collections({ config, onNotify }: CollectionsProps) {
   const navigate = useNavigate();
-  const [collections, setCollections] = useState<any[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
@@ -36,7 +37,7 @@ export default function Collections({ config, onNotify }: CollectionsProps) {
   const fetchingUrl = `${cleanBase}/api/v1/collections?page=${currentPage}&limit=10`;
 
   // Fetch collections function
-  const fetchCollections = async (page: number = 1) => {
+  const fetchCollections = useCallback(async (page: number = 1) => {
     if (!config.baseUrl || !config.apiKey) {
       onNotify('Backend configuration missing! Please configure Host and API Key in the Config tab.', 'error');
       return;
@@ -68,28 +69,37 @@ export default function Collections({ config, onNotify }: CollectionsProps) {
         setCurrentPage(data.pagination.page);
       }
       onNotify('Collections retrieved successfully!', 'success');
-    } catch (err: any) {
-      console.error(err);
-      onNotify(err.message || 'Error fetching collections', 'error');
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      onNotify(error.message || 'Error fetching collections', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [config.baseUrl, config.apiKey, onNotify]);
 
   // Auto-fetch collections on load if base URL & key are already set
   useEffect(() => {
+    let ignore = false;
     if (config.baseUrl && config.apiKey) {
-      fetchCollections(1);
+      Promise.resolve().then(() => {
+        if (!ignore) {
+          fetchCollections(1);
+        }
+      });
     }
-  }, [config.baseUrl, config.apiKey]);
+    return () => {
+      ignore = true;
+    };
+  }, [config.baseUrl, config.apiKey, fetchCollections]);
 
   // View collection images handler
-  const handleViewCollection = (col: any) => {
+  const handleViewCollection = (col: Collection) => {
     navigate(`/collection/${col.id}`);
   };
 
   // Delete collection handler
-  const handleDeleteCollection = async (col: any) => {
+  const handleDeleteCollection = async (col: Collection) => {
     const confirmMessage = `Are you sure you want to delete the collection "${col.name}" and all of its ${col.imageCount} associated images?\n\nThis will permanently delete them from the database and storage. This action cannot be undone.`;
     if (window.confirm(confirmMessage)) {
       if (!config.baseUrl || !config.apiKey) {
@@ -120,9 +130,10 @@ export default function Collections({ config, onNotify }: CollectionsProps) {
 
         // Refresh collections
         fetchCollections(currentPage);
-      } catch (err: any) {
-        console.error(err);
-        onNotify(err.message || 'Error deleting collection', 'error');
+      } catch (err) {
+        const error = err as Error;
+        console.error(error);
+        onNotify(error.message || 'Error deleting collection', 'error');
       }
     }
   };
