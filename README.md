@@ -1,75 +1,56 @@
-# React + TypeScript + Vite
+# PixelVault Backend Console (Bugout Console)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A developer-focused React console frontend designed for testing image uploading services, managing media collections, and verifying API response schemas in real-time.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Purpose & Overview
 
-## React Compiler
+This application serves as an interactive playground and admin console to test local or remote backend image storage and collections services. It allows developers to:
+1. **Configure Service Endpoints**: Set up target API service locations (`Host Base URL`) and `Authorization` headers (API Key / Token) dynamically.
+2. **Test Image Uploads**: Select or drag-and-drop local image files, categorize them into specific collections (e.g., `pets`), and upload them.
+3. **Inspect Server Payloads**: Directly verify JSON response formats, statuses, and returned image parameters returned by the storage server.
+4. **Browse Assets**: List live uploaded assets side-by-side with local mock previews, inspect image resolutions, sizes, types, and delete uploaded files.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🔌 Connection Parameters Configuration
+- Accessible in the **Config** tab.
+- Persists the backend connection `baseUrl` and `apiKey` securely in the browser's `LocalStorage`.
+- Restores parameters automatically on start, making it easy to test against different ports (e.g. `http://localhost:3000`, `http://localhost:8000`) or cloud endpoints.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📤 Image Upload Tester
+- Drag-and-drop dropzone with image thumbnails, file detail overlays, and clear buttons.
+- Category inputs to specify the target storage `collection` field.
+- Visual upload loading spinner during multipart form submissions.
+- **Request Format** dispatched by the console:
+  ```bash
+  POST {baseUrl}/api/v1/upload
+  Headers:
+    Authorization: Bearer <apiKey>
+  Body (multipart/form-data):
+    image: [binary file]
+    collection: [collection name]
+  ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 📄 Raw Response Schema Visualizer
+- Automatically captures the raw HTTP response from the backend.
+- Displays response code status badges (e.g., `HTTP 200` or `HTTP 500`).
+- Outputs formatting-highlighted, clean JSON with a **Copy to Clipboard** utility.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 🖼️ Asset Explorer & Actions
+- **Grid / List Views**: Switch layouts dynamically.
+- **Mock Data Toggle**: Toggle pre-populated mock assets to preview console behavior.
+- **Live Assets Card**: Displays actual uploaded images, including filename, size (KB/MB conversion), type, dimensions (e.g., `4032 × 3024`), and collection tags.
+- **Interactive Triggers**: One-click shortcuts to open the direct asset URL (`View`), download the file, or delete it from storage (`DELETE {baseUrl}/api/v1/images/:id`).
 
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Get Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v22+)
+- An active backend server implementing the upload endpoints (or configure the console to point to your live upload service).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```

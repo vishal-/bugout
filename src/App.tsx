@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import Config from './pages/Config';
 import Collections from './pages/Collections';
+import CollectionDetail from './pages/CollectionDetail';
 import Images from './pages/Images';
 import { 
   FiZap, 
@@ -219,8 +220,33 @@ function App() {
               />
             } 
           />
-          <Route path="/collections" element={<Collections />} />
-          <Route path="/images" element={<Images />} />
+          <Route 
+            path="/collections" 
+            element={
+              <Collections 
+                config={config} 
+                onNotify={(msg, type) => addToast(msg, type)} 
+              />
+            } 
+          />
+          <Route 
+            path="/collection/:id" 
+            element={
+              <CollectionDetail 
+                config={config} 
+                onNotify={(msg, type) => addToast(msg, type)} 
+              />
+            } 
+          />
+          <Route 
+            path="/images" 
+            element={
+              <Images 
+                config={config} 
+                onNotify={(msg, type) => addToast(msg, type)} 
+              />
+            } 
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
