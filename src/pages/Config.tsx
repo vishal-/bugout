@@ -9,7 +9,7 @@ interface ConfigProps {
 export default function Config({ onSaveConfig, onNotify }: ConfigProps) {
   // Load values from localStorage
   const [baseUrl, setBaseUrl] = useState(() => {
-    return localStorage.getItem('backend_base_url') || '';
+    return localStorage.getItem('backend_base_url') || 'https://pickaso.poovi.co.in';
   });
   const [apiKey, setApiKey] = useState(() => {
     return localStorage.getItem('backend_api_key') || '';
@@ -22,7 +22,7 @@ export default function Config({ onSaveConfig, onNotify }: ConfigProps) {
     e.preventDefault();
     onSaveConfig(baseUrl.trim(), apiKey.trim());
     onNotify('Connection parameters synced to LocalStorage!');
-    
+
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -43,11 +43,11 @@ export default function Config({ onSaveConfig, onNotify }: ConfigProps) {
       justifyContent: 'center',
       padding: '40px 20px',
     }}>
-      <div 
-        className="glass-panel animate-fade-in" 
-        style={{ 
-          maxWidth: '460px', 
-          width: '100%', 
+      <div
+        className="glass-panel animate-fade-in"
+        style={{
+          maxWidth: '460px',
+          width: '100%',
           padding: '40px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(139, 92, 246, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -81,7 +81,7 @@ export default function Config({ onSaveConfig, onNotify }: ConfigProps) {
 
         {/* Configuration Form */}
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
+
           {/* Base URL Input */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label htmlFor="baseUrl" style={{ fontSize: '14px', color: 'var(--text-light)', fontWeight: 500 }}>
@@ -215,7 +215,7 @@ export default function Config({ onSaveConfig, onNotify }: ConfigProps) {
 
         {/* Success Alert */}
         {saved && (
-          <div 
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import Config from './pages/Config';
 import Collections from './pages/Collections';
@@ -32,25 +32,25 @@ function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Callback to sync config changes in real-time
-  const handleSaveConfig = (url: string, key: string) => {
+  const handleSaveConfig = useCallback((url: string, key: string) => {
     localStorage.setItem('backend_base_url', url);
     localStorage.setItem('backend_api_key', key);
     setConfig({ baseUrl: url, apiKey: key });
-  };
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   // Toast dispatch helper
-  const addToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = 'toast-' + (++toastIdCounter);
     setToasts((prev) => [...prev, { id, message, type }]);
     
     setTimeout(() => {
       removeToast(id);
     }, 4000);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, [removeToast]);
 
   // Get active domain label
   const getEndpointLabel = () => {
@@ -216,7 +216,7 @@ function App() {
             element={
               <Config 
                 onSaveConfig={handleSaveConfig} 
-                onNotify={(msg) => addToast(msg, 'success')} 
+                onNotify={addToast} 
               />
             } 
           />
@@ -225,7 +225,7 @@ function App() {
             element={
               <Collections 
                 config={config} 
-                onNotify={(msg, type) => addToast(msg, type)} 
+                onNotify={addToast} 
               />
             } 
           />
@@ -234,7 +234,7 @@ function App() {
             element={
               <CollectionDetail 
                 config={config} 
-                onNotify={(msg, type) => addToast(msg, type)} 
+                onNotify={addToast} 
               />
             } 
           />
@@ -243,7 +243,7 @@ function App() {
             element={
               <Images 
                 config={config} 
-                onNotify={(msg, type) => addToast(msg, type)} 
+                onNotify={addToast} 
               />
             } 
           />
