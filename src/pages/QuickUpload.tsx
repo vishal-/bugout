@@ -35,7 +35,7 @@ interface FieldConfig {
    Constants
 ────────────────────────────────────────────────────────── */
 const FIELDS: FieldConfig[] = [
-  { key: 'serviceUrl', label: 'Service URL', placeholder: 'https://your-app.com/api/qupload', required: true, hint: 'The endpoint hosting the upload service' },
+  { key: 'serviceUrl', label: 'Service URL', placeholder: '/api/v1/qupload', required: true, hint: 'Use a relative path (e.g. /api/v1/qupload) to go through the Vite proxy — entering the backend URL directly will cause CORS errors' },
   { key: 'accessKey', label: 'Access Key', placeholder: 'S3 / R2 access key ID', required: true },
   { key: 'secretKey', label: 'Secret Key', placeholder: 'S3 / R2 secret access key', required: true, type: 'password' },
   { key: 'bucket', label: 'Bucket', placeholder: 'my-bucket', required: true },
