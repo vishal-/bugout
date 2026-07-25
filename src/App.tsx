@@ -4,6 +4,7 @@ import Config from './pages/Config';
 import Collections from './pages/Collections';
 import CollectionDetail from './pages/CollectionDetail';
 import Images from './pages/Images';
+import QuickUpload from './pages/QuickUpload';
 import { 
   FiZap, 
   FiSliders, 
@@ -12,7 +13,8 @@ import {
   FiCheckCircle, 
   FiAlertCircle, 
   FiInfo, 
-  FiX 
+  FiX,
+  FiUploadCloud
 } from 'react-icons/fi';
 
 interface Toast {
@@ -149,6 +151,26 @@ function App() {
           </NavLink>
 
           <NavLink 
+            to="/quick-upload" 
+            style={({ isActive }) => ({
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: isActive ? 'var(--text-light)' : 'var(--text)',
+              background: isActive ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+              border: `1px solid ${isActive ? 'var(--border)' : 'transparent'}`,
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            })}
+          >
+            <FiUploadCloud />
+            Quick Upload
+          </NavLink>
+
+          <NavLink 
             to="/config" 
             style={({ isActive }) => ({
               padding: '8px 16px',
@@ -246,6 +268,10 @@ function App() {
                 onNotify={addToast} 
               />
             } 
+          />
+          <Route 
+            path="/quick-upload" 
+            element={<QuickUpload />} 
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
